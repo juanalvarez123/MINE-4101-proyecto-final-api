@@ -4,6 +4,7 @@ import pandas as pd
 from flask import Flask
 from flask import jsonify
 from flask import request
+from flask_cors import CORS, cross_origin
 
 from config import config
 
@@ -16,8 +17,9 @@ def create_app(arg_environment):
 
 environment = config['development']
 app = create_app(environment)
-gdf = gpd.read_file('data/Catastro_gdb.geojson')
+CORS(app, support_credentials=True)
 
+gdf = gpd.read_file('data/Catastro_gdb.geojson')
 hurtos_groups = pd.read_csv('data/medellin_hurtos_groups.csv')
 features = ['hurtos_peligrosos', 'hurtos_no_peligrosos', 'hurtos_a_mujeres', 'hurtos_a_hombres',
             'hurtos_en_transporte_publico', 'hurtos_en_transporte_particular', 'hurtos_en_via_publica', 'hurtos_niños',
@@ -30,6 +32,7 @@ def get_ping():
     return 'pong'
 
 
+@cross_origin(supports_credentials=True)
 @app.route('/predict', methods=['POST'])
 def post_predict():
     args = request.args
