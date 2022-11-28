@@ -19,7 +19,6 @@ environment = config['development']
 app = create_app(environment)
 CORS(app, support_credentials=True)
 
-gdf = gpd.read_file('data/Catastro_gdb.geojson')
 hurtos_groups = pd.read_csv('data/medellin_hurtos_groups.csv')
 features = ['hurtos_peligrosos', 'hurtos_no_peligrosos', 'hurtos_a_mujeres', 'hurtos_a_hombres',
             'hurtos_en_transporte_publico', 'hurtos_en_transporte_particular', 'hurtos_en_via_publica', 'hurtos_niños',
@@ -44,6 +43,7 @@ def post_predict():
     results = pd.DataFrame([X.index, results]).T
 
     df_temp = hurtos_groups.join(results)
+    cluster_order = list(df_temp.groupby([1])['hurtos'].max().sort_values().index.values)
     clustered_df = pd.DataFrame()
     clustered_df['cluster'] = df_temp[1]
     clustered_df['codigo_barrio'] = df_temp['codigo_barrio']
@@ -52,7 +52,7 @@ def post_predict():
     for index, row in clustered_df.iterrows():
         barrios.append({
             'barrio': row['codigo_barrio'],
-            'cluster': row['cluster']
+            'cluster': cluster_order.index(row['cluster'])
         })
 
     return jsonify({'barrios': barrios})
