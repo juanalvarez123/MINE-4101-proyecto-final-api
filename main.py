@@ -1,4 +1,3 @@
-import geopandas as gpd
 import joblib
 import pandas as pd
 from flask import Flask
